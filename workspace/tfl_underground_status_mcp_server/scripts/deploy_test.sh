@@ -3,7 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SEARCH_DIR="${SCRIPT_DIR}"
+SEARCH_DIR="$(dirname "${SCRIPT_DIR}")"
 SELF_PATH="$(realpath "$0")"
 
 while [ "${SEARCH_DIR}" != "/" ]; do
