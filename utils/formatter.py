@@ -88,10 +88,11 @@ def format_response(
     
     summary = _build_summary(lines)
     warnings = _build_warnings(lines)
+    resolved_cache_status = cache_status if cache_status is not None else (cache_info or {}).get("cache_status", "fresh")
     
     return ToolResponse(
         timestamp_utc=datetime.now(timezone.utc),
-        cache_status=cache_status if cache_status is not None else (cache_info or {}).get("cache_status", "fresh"),
+        cache_status=resolved_cache_status,
         lines=lines,
         summary=summary,
         warnings=warnings,

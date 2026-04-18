@@ -47,6 +47,8 @@ class CacheManager:
             try:
                 entry = self._cache["tfl_status"]
                 now = datetime.now(timezone.utc)
+                # Keep this explicit check to avoid returning entries that can expire
+                # between retrieval and TTL computation during concurrent access.
                 if now >= entry.expires_at_utc:
                     self._cache.pop("tfl_status", None)
                     return None
