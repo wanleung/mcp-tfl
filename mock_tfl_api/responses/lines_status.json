@@ -1,0 +1,9 @@
+{
+  "lines": [
+    {"id": "victoria", "status": "Good Service"},
+    {"id": "central", "status": "Minor Delays"},
+    {"id": "northern", "status": "Good Service"},
+    {"id": "piccadilly", "status": "Good Service"},
+    {"id": "circle", "status": "Part Suspended"}
+  ]
+}
