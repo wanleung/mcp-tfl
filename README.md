@@ -62,7 +62,7 @@ pip install fastapi mcp httpx cachetools uvicorn
 ### 4. Run the Server
 #### Local (development)
 ```bash
-python main.py
+uvicorn main:app
 ```
 #### Production (Docker)
 ```bash
