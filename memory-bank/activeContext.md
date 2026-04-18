@@ -1,19 +1,19 @@
 # Active Context
 
 ## Current Focus
-- TfL Underground Status MCP Server implementation is complete and containerized.
-- Addressing code review feedback: config parsing robustness and cache concurrency safety.
+- Docker Compose v2 setup with profile-driven environments, multi-stage Dockerfile, FastAPI mock server, and containerized test runner.
 
 ## Recent Changes
-- Initial feature branch delivered: Core MCP server built with FastAPI + official `mcp` SDK.
-- Integrated async HTTP client (`httpx`) for TfL API communication.
-- Implemented in-memory cache manager using `cachetools.TTLCache` (60s TTL).
-- Dockerized runtime (Alpine + uvicorn) for headless, stateless AI client integration.
-- Environment-driven configuration established for cache TTL, timeouts, and endpoints.
+- TfL Underground Status MCP Server implementation completed and containerized.
+- Addressed code review feedback: config parsing robustness and cache concurrency safety.
+- Added Docker Compose v2 configuration with profile-driven service definitions for test and deployment.
+- Implemented multi-stage Dockerfile using `python:3.11-alpine`.
+- Integrated containerized test runner (`scripts/run_tests.sh`) and lightweight FastAPI mock server for offline integration testing.
+- Added Docker healthchecks and stdout structured logging.
 
 ## Immediate Next Steps
-- Fix `config/settings.py` to handle invalid environment variable type conversions gracefully.
-- Implement synchronization/locking in the cache manager to prevent race conditions under concurrent requests.
-- Integrate `pydantic-settings` for robust configuration schema validation.
-- Replace default `httpx` retry logic with custom exponential backoff for TfL API calls.
-- Finalize PR merge after resolving identified issues.
+- Resolve `scripts/run_tests.sh` bash compatibility issue for Alpine base image.
+- Inject test dependencies (`pytest`, `pytest-asyncio`, `httpx`) into appropriate Docker build stages.
+- Align Docker Compose healthcheck configuration with actual FastAPI health route implementation.
+- Standardize error handling across container entrypoints and mock API fallbacks.
+- Validate multi-container networking and Compose profile isolation before production merge.
