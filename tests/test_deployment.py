@@ -3,6 +3,12 @@ import pytest
 import httpx
 
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000")
+RUN_DEPLOYMENT_TESTS = os.environ.get("RUN_DEPLOYMENT_TESTS") == "1"
+
+pytestmark = pytest.mark.skipif(
+    not RUN_DEPLOYMENT_TESTS,
+    reason="Deployment smoke tests run only via scripts/deploy_test.sh"
+)
 
 
 @pytest.fixture(scope="function")

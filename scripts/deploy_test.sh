@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 COMPOSE_FILE="docker-compose.test.yml"
 SERVICE_URL="http://localhost:8000"
 MAX_RETRIES=30
@@ -33,7 +35,8 @@ fi
 
 echo "🧪 Running deployment smoke tests..."
 export BASE_URL="${SERVICE_URL}"
-if ! pytest tests/test_deployment.py -v; then
+export RUN_DEPLOYMENT_TESTS=1
+if ! python -m pytest tests/test_deployment.py -v; then
     echo "❌ Smoke tests failed."
     docker compose -f "$COMPOSE_FILE" logs
     exit 1
@@ -41,25 +44,3 @@ fi
 
 echo "✅ Deployment tests passed successfully!"
 exit 0
-
-# Deployment Test Plan: TfL Underground Status MCP Server
-
-## Services Tested
-| Service | Port | Health Check |
-|---------|------|--------------|
-| app     | 8000 | GET /health  |
-
-## Smoke Tests
-| Test | Endpoint | Expected |
-|------|----------|----------|
-| Health check | GET /health | 200 OK, JSON with `status="healthy"` |
-| OpenAPI Schema | GET /openapi.json | 200 OK, valid JSON schema with `/health` path |
-| MCP Transport Mount | GET /mcp | 200/405/406 (not 404/500), confirms SSE routing |
-| Not Found | GET /nonexistent | 404 Not Found |
-
-## How to Run Locally
-chmod +x scripts/deploy_test.sh
-./scripts/deploy_test.sh
-
-## CI Integration
-These tests run in the `deploy-test` job in `.github/workflows/run-tests.yml`.
