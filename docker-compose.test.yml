@@ -1,20 +1,53 @@
-version: "3.8"
+# docker-compose.test.yml
+# Overrides for test profile; attaches mock API, mounts test runner, disables external routing
+# Usage: docker compose -f docker-compose.yml -f docker-compose.test.yml --profile test up
 
 services:
-  app:
-    build: .
-    ports:
-      - "8000:8000"
+  mcp-server:
     environment:
-      - TESTING=true
-      - LOG_LEVEL=WARNING
-      - MCP_TRANSPORT=sse
-      - TFL_CACHE_TTL=10
-      - TFL_API_TIMEOUT=5
+      APP_ENV: test
+      TFL_API_BASE_URL: http://mock-tfl-api:8080
+      TFL_API_TIMEOUT_MS: 2000
+      CACHE_TTL_SECONDS: 5
+      LOG_LEVEL: DEBUG
+    ports: [] # Disable external routing for isolated test execution
+    depends_on:
+      mock-tfl-api:
+        condition: service_healthy
+
+  mock-tfl-api:
+    build:
+      context: ./mock_tfl_api
+      dockerfile: Dockerfile
+    container_name: mcp-tfl-mock-api
+    environment:
+      APP_ENV: test
+      MOCK_DELAY_MS: ${MOCK_DELAY_MS:-0}
+      MOCK_ERROR_RATE: ${MOCK_ERROR_RATE:-0}
+    networks:
+      - mcp-network
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
       interval: 5s
       timeout: 3s
-      retries: 10
-      start_period: 10s
-    restart: "no"
+      retries: 3
+      start_period: 5s
+    profiles:
+      - test
+
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcp-tfl-test-runner
+    environment:
+      APP_ENV: test
+      MCP_SERVER_URL: http://mcp-server:8000
+    command: ["bash", "/app/scripts/run_tests.sh"]
+    depends_on:
+      mcp-server:
+        condition: service_healthy
+    networks:
+      - mcp-network
+    profiles:
+      - test
