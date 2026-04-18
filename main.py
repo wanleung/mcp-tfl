@@ -15,12 +15,13 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from mcp.server.fastmcp import FastMCP
 
-from config.settings import settings
+from config.settings import get_settings
 from tools.underground_status import register_tools
 
 
 def setup_logging() -> None:
     """Configure structured JSON-compatible logging for the application."""
+    settings = get_settings()
     log_format = "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
     logging.basicConfig(
         level=getattr(logging, settings.LOG_LEVEL),
@@ -45,8 +46,8 @@ mcp = FastMCP("TfL Underground Status")
 register_tools(mcp)
 
 # Bind MCP transport
-# Defaults to SSE for HTTP/ASGI deployments (Docker/uvicorn)
-# Can be overridden to "stdio" for local CLI integration
+# This ASGI app serves MCP over SSE only.
+# MCP_TRANSPORT=stdio is accepted for compatibility but falls back to SSE.
 transport = os.getenv("MCP_TRANSPORT", "sse").lower()
 if transport == "stdio":
     logging.warning("Stdio transport requested but running in ASGI context. Falling back to SSE.")

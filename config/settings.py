@@ -27,11 +27,17 @@ class Settings:
     @classmethod
     def from_env(cls) -> "Settings":
         """Load and validate settings from environment variables."""
-        cache_ttl = int(os.getenv("TFL_CACHE_TTL", "60"))
+        try:
+            cache_ttl = int(os.getenv("TFL_CACHE_TTL", "60"))
+        except ValueError:
+            raise ValueError("TFL_CACHE_TTL must be a valid integer") from None
         if cache_ttl <= 0:
             raise ValueError("TFL_CACHE_TTL must be a positive integer")
 
-        api_timeout = float(os.getenv("TFL_API_TIMEOUT", "10.0"))
+        try:
+            api_timeout = float(os.getenv("TFL_API_TIMEOUT", "10.0"))
+        except ValueError:
+            raise ValueError("TFL_API_TIMEOUT must be a valid number") from None
         if api_timeout <= 0:
             raise ValueError("TFL_API_TIMEOUT must be a positive number")
 
@@ -47,5 +53,12 @@ class Settings:
         )
 
 
-# Singleton instance for global access throughout the application
-settings = Settings.from_env()
+_settings: Settings | None = None
+
+
+def get_settings() -> Settings:
+    """Return lazily-loaded application settings."""
+    global _settings
+    if _settings is None:
+        _settings = Settings.from_env()
+    return _settings

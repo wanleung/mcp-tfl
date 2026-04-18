@@ -5,20 +5,19 @@ Orchestrates cache lookup, API fetching, response formatting, and error fallback
 
 import logging
 from datetime import datetime, timezone
-from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
 from cache.manager import CacheManager
 from clients.tfl_api import fetch_all_lines, TflApiError
-from config.settings import settings
+from config.settings import get_settings
 from models.schemas import ToolResponse
 from utils.formatter import format_response
 
 logger = logging.getLogger(__name__)
 
 # Singleton cache manager instance
-cache_manager = CacheManager(ttl_seconds=settings.TFL_CACHE_TTL)
+cache_manager = CacheManager()
 
 
 def register_tools(mcp: FastMCP) -> None:
@@ -27,6 +26,8 @@ def register_tools(mcp: FastMCP) -> None:
     Args:
         mcp: The FastMCP server instance to register the tool with.
     """
+
+    cache_manager.configure(ttl_seconds=get_settings().TFL_CACHE_TTL)
 
     @mcp.tool()
     async def get_tfl_underground_status() -> str:
@@ -42,8 +43,7 @@ def register_tools(mcp: FastMCP) -> None:
 
             if cache_entry and not is_stale:
                 # Cache hit
-                cache_status = "fresh" if cache_entry.ttl_remaining_seconds > settings.TFL_CACHE_TTL / 2 else "cached"
-                response = format_response(cache_entry.data, cache_status=cache_status)
+                response = format_response(cache_entry.data, cache_status="cached")
             else:
                 # Cache miss or stale -> fetch from API
                 raw_data = await fetch_all_lines()

@@ -11,8 +11,11 @@ from typing import Any
 from models.schemas import LineStatus, ToolResponse
 
 
-def _parse_line_status(raw_line: dict[str, Any]) -> LineStatus:
+def _parse_line_status(raw_line: dict[str, Any] | LineStatus) -> LineStatus:
     """Parses a single raw line dictionary from the TfL API into a LineStatus model."""
+    if isinstance(raw_line, LineStatus):
+        return raw_line
+
     line_name = raw_line.get("name", "Unknown Line")
     line_statuses = raw_line.get("lineStatuses", [])
     
@@ -61,13 +64,22 @@ def _build_warnings(lines: list[LineStatus]) -> list[str]:
     return warnings
 
 
-def format_response(raw_data: list[dict[str, Any]], cache_info: dict[str, Any]) -> ToolResponse:
+def format_response(
+    raw_data: list[dict[str, Any] | LineStatus],
+    cache_info: dict[str, Any] | None = None,
+    cache_status: str | None = None,
+    error_type: str | None = None,
+    user_message: str | None = None
+) -> ToolResponse:
     """
     Transforms raw TfL API payloads into a standardized ToolResponse.
 
     Args:
         raw_data: List of raw line status dictionaries from the TfL API.
-        cache_info: Dictionary containing cache metadata, expected to include 'cache_status'.
+        cache_info: Optional dictionary containing cache metadata, including 'cache_status'.
+        cache_status: Optional cache status override.
+        error_type: Optional machine-readable error code.
+        user_message: Optional user-facing error message.
 
     Returns:
         ToolResponse: Formatted response ready for MCP client consumption.
@@ -79,10 +91,10 @@ def format_response(raw_data: list[dict[str, Any]], cache_info: dict[str, Any]) 
     
     return ToolResponse(
         timestamp_utc=datetime.now(timezone.utc),
-        cache_status=cache_info.get("cache_status", "fresh"),
+        cache_status=cache_status if cache_status is not None else (cache_info or {}).get("cache_status", "fresh"),
         lines=lines,
         summary=summary,
         warnings=warnings,
-        error_type=None,
-        user_message=None
+        error_type=error_type,
+        user_message=user_message
     )

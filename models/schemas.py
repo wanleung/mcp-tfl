@@ -24,7 +24,10 @@ class LineStatus(BaseModel):
         ..., min_length=1, description="Name of the Underground line (e.g., 'Central')"
     )
     status_severity: int = Field(
-        ..., ge=0, le=10, description="TfL status severity code (0 indicates Good Service)"
+        ...,
+        ge=-1,
+        le=10,
+        description="TfL status severity code (-1 unknown/unavailable, 0 indicates Good Service)"
     )
     status_description: str = Field(
         ..., min_length=1, description="Human-readable status description provided by TfL"

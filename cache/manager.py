@@ -26,6 +26,16 @@ class CacheManager:
         self._cache = TTLCache(maxsize=maxsize, ttl=ttl_seconds)
         self._lock = threading.Lock()
         self._ttl_seconds = ttl_seconds
+        self._maxsize = maxsize
+
+    def configure(self, ttl_seconds: int, maxsize: int | None = None) -> None:
+        """Reset cache configuration (used during app startup)."""
+        if maxsize is None:
+            maxsize = self._maxsize
+        with self._lock:
+            self._ttl_seconds = ttl_seconds
+            self._maxsize = maxsize
+            self._cache = TTLCache(maxsize=maxsize, ttl=ttl_seconds)
 
     def get(self) -> Optional[CacheEntry]:
         """Retrieve the current cache entry if it exists and hasn't been evicted.
@@ -37,6 +47,9 @@ class CacheManager:
             try:
                 entry = self._cache["tfl_status"]
                 now = datetime.now(timezone.utc)
+                if now >= entry.expires_at_utc:
+                    self._cache.pop("tfl_status", None)
+                    return None
                 ttl_remaining = max(0, int((entry.expires_at_utc - now).total_seconds()))
                 return CacheEntry(
                     data=entry.data,

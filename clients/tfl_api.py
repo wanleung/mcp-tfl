@@ -11,7 +11,7 @@ from typing import Dict, List
 
 import httpx
 
-from config.settings import settings
+from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +38,7 @@ async def fetch_all_lines() -> List[Dict]:
     Raises:
         TflApiError: If the request fails after maximum retries or encounters a client error.
     """
+    settings = get_settings()
     max_retries = 3
     base_delay = 1.0
 

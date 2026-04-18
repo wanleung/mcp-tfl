@@ -44,7 +44,7 @@ async def test_tool_cache_hit(mock_mcp):
         result = await tool_func()
         assert mock_fetch.call_count == 0
         assert '"Central"' in result
-        assert '"cache_status": "fresh"' in result or '"cache_status": "cached"' in result
+        assert '"cache_status":"cached"' in result
 
 
 @pytest.mark.asyncio
@@ -59,7 +59,7 @@ async def test_tool_cache_miss_fetches_api(mock_mcp):
     with patch("tools.underground_status.fetch_all_lines", new_callable=AsyncMock, return_value=mock_raw):
         result = await tool_func()
         assert '"Victoria"' in result
-        assert '"cache_status": "fresh"' in result
+        assert '"cache_status":"fresh"' in result
 
 
 @pytest.mark.asyncio
@@ -74,8 +74,8 @@ async def test_tool_api_error_with_stale_cache(mock_mcp):
          patch("tools.underground_status.fetch_all_lines", new_callable=AsyncMock, side_effect=TflApiError("API Down")):
         result = await tool_func()
         assert '"Bakerloo"' in result
-        assert '"cache_status": "stale"' in result
-        assert '"error_type": "api_failure"' in result
+        assert '"cache_status":"stale"' in result
+        assert '"error_type":"api_failure"' in result
 
 
 @pytest.mark.asyncio
@@ -88,6 +88,6 @@ async def test_tool_api_error_no_cache(mock_mcp):
     
     with patch("tools.underground_status.fetch_all_lines", new_callable=AsyncMock, side_effect=TflApiError("API Down")):
         result = await tool_func()
-        assert '"lines": []' in result
-        assert '"error_type": "api_failure"' in result
-        assert '"user_message": "Failed to fetch live status from TfL API. Please try again later."' in result
+        assert '"lines":[]' in result
+        assert '"error_type":"api_failure"' in result
+        assert '"user_message":"Failed to fetch live status from TfL API. Please try again later."' in result
