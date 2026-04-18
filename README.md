@@ -2,7 +2,7 @@
 
 ## Project Summary
 
-**mcp-tfl** is a headless, stateless MCP (Machine Communication Protocol) server for real-time London Underground (TfL) line status queries. It is designed for AI client integration, exposing JSON-RPC endpoints for programmatic access to TfL data. The project leverages FastAPI, the official Python `mcp` SDK, and an async HTTP client to deliver fast, reliable responses with in-memory caching. The runtime is containerized for lightweight, production-ready deployment.
+**mcp-tfl** is a headless, stateless MCP (Model Context Protocol) server for real-time London Underground (TfL) line status queries. It is designed for AI client integration, exposing JSON-RPC endpoints for programmatic access to TfL data. The project leverages FastAPI, the official Python `mcp` SDK, and an async HTTP client to deliver fast, reliable responses with in-memory caching. The runtime is containerized for lightweight, production-ready deployment.
 
 ### Key Features
 - **MCP Protocol Handler:** FastAPI + official `mcp` SDK for native JSON-RPC routing and async I/O.
