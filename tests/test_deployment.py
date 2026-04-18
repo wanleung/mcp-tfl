@@ -7,7 +7,7 @@ RUN_DEPLOYMENT_TESTS = os.environ.get("RUN_DEPLOYMENT_TESTS") == "1"
 
 pytestmark = pytest.mark.skipif(
     not RUN_DEPLOYMENT_TESTS,
-    reason="Deployment smoke tests run only when RUN_DEPLOYMENT_TESTS is exactly '1'"
+    reason="Deployment smoke tests run only when RUN_DEPLOYMENT_TESTS is set to '1'"
 )
 
 

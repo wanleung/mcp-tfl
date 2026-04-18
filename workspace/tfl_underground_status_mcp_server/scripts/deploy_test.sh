@@ -8,7 +8,10 @@ SELF_PATH="$(realpath "$0")"
 
 while [ "${SEARCH_DIR}" != "/" ]; do
     TARGET_PATH="${SEARCH_DIR}/scripts/deploy_test.sh"
-    if [ -f "${TARGET_PATH}" ] && [ "$(realpath "${TARGET_PATH}")" != "${SELF_PATH}" ]; then
+    if [ -f "${TARGET_PATH}" ] \
+        && [ -f "${SEARCH_DIR}/README.md" ] \
+        && [ -f "${SEARCH_DIR}/main.py" ] \
+        && [ "$(realpath "${TARGET_PATH}")" != "${SELF_PATH}" ]; then
         exec bash "${TARGET_PATH}"
     fi
     SEARCH_DIR="$(dirname "${SEARCH_DIR}")"
