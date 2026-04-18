@@ -4,10 +4,12 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SEARCH_DIR="${SCRIPT_DIR}"
+SELF_PATH="$(realpath "$0")"
 
 while [ "${SEARCH_DIR}" != "/" ]; do
-    if [ -f "${SEARCH_DIR}/scripts/deploy_test.sh" ]; then
-        exec bash "${SEARCH_DIR}/scripts/deploy_test.sh"
+    TARGET_PATH="${SEARCH_DIR}/scripts/deploy_test.sh"
+    if [ -f "${TARGET_PATH}" ] && [ "$(realpath "${TARGET_PATH}")" != "${SELF_PATH}" ]; then
+        exec bash "${TARGET_PATH}"
     fi
     SEARCH_DIR="$(dirname "${SEARCH_DIR}")"
 done
