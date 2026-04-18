@@ -29,7 +29,12 @@ class CacheManager:
         self._maxsize = maxsize
 
     def configure(self, ttl_seconds: int, maxsize: int | None = None) -> None:
-        """Reset cache configuration (used during app startup)."""
+        """Reset cache configuration (used during app startup).
+
+        Args:
+            ttl_seconds: New cache TTL in seconds.
+            maxsize: Optional new max cache size. Keeps current size when omitted.
+        """
         if maxsize is None:
             maxsize = self._maxsize
         with self._lock:
