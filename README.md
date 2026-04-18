@@ -56,7 +56,7 @@ TFL_API_ENDPOINT=https://api.tfl.gov.uk/Line/Mode/tube/Status
 
 ### 3. Install Dependencies
 ```bash
-pip install -r requirements.txt
+pip install fastapi mcp httpx cachetools uvicorn
 ```
 
 ### 4. Run the Server
