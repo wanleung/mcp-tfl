@@ -120,4 +120,7 @@ Call the registered MCP tool `get_tfl_underground_status` with no arguments:
 - **Container Packaging:** A production `Dockerfile` is not currently included in the repository.
 
 ## License
-See LICENSE file for details.
+
+This project is licensed under the **GNU General Public License v3.0 or later** (GPL-3.0-or-later).
+
+See the [LICENSE](LICENSE) file for the full license text.
