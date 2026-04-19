@@ -1,0 +1,7 @@
+cachetools
+fastapi
+httpx
+mcp
+pydantic
+pydantic-settings
+uvicorn

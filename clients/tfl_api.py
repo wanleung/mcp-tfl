@@ -15,10 +15,6 @@ from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 
-TFL_API_BASE_URL = "https://api.tfl.gov.uk"
-TFL_LINE_STATUS_ENDPOINT = f"{TFL_API_BASE_URL}/Line/Mode/tube/Status"
-
-
 class TflApiError(Exception):
     """Custom exception for TfL API communication failures."""
     pass
@@ -41,11 +37,12 @@ async def fetch_all_lines() -> List[Dict]:
     settings = get_settings()
     max_retries = 3
     base_delay = 1.0
+    endpoint = f"{settings.TFL_API_BASE_URL.rstrip('/')}/Line/Mode/tube/Status"
 
-    async with httpx.AsyncClient(timeout=settings.TFL_API_TIMEOUT) as client:
+    async with httpx.AsyncClient(timeout=settings.TFL_API_TIMEOUT_MS / 1000.0) as client:
         for attempt in range(max_retries):
             try:
-                response = await client.get(TFL_LINE_STATUS_ENDPOINT)
+                response = await client.get(endpoint)
 
                 # Map and handle HTTP error status codes
                 if response.status_code >= 400:

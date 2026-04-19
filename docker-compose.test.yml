@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   mock-tfl-api:
     build:
@@ -23,6 +21,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: runtime
     container_name: mcp-tfl-server-test
     ports:
       - "8000:8000"
@@ -46,6 +45,23 @@ services:
       timeout: 3s
       retries: 5
       start_period: 10s
+
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    container_name: mcp-tfl-test-runner
+    command: ["sh", "/app/scripts/run_tests.sh"]
+    environment:
+      MCP_SERVER_URL: http://mcp-server:8000
+    networks:
+      - mcp-network
+    depends_on:
+      mcp-server:
+        condition: service_healthy
+    profiles:
+      - test
 
 networks:
   mcp-network:

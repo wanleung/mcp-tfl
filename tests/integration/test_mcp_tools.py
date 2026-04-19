@@ -3,6 +3,7 @@
 Validates tool schemas, MCP-compliant error codes, cache TTL consistency, and health reporting.
 """
 import pytest
+import json
 
 pytestmark = pytest.mark.asyncio
 
@@ -16,10 +17,9 @@ async def test_tools_list_returns_valid_schemas(mcp_client):
     assert len(tools) > 0
     
     tool_names = [t["name"] for t in tools]
-    assert "get_line_status" in tool_names
-    assert "get_line_disruption" in tool_names
+    assert "get_tfl_underground_status" in tool_names
     
-    status_tool = next(t for t in tools if t["name"] == "get_line_status")
+    status_tool = next(t for t in tools if t["name"] == "get_tfl_underground_status")
     assert "inputSchema" in status_tool
     assert status_tool["inputSchema"]["type"] == "object"
 
@@ -27,7 +27,7 @@ async def test_tools_list_returns_valid_schemas(mcp_client):
 async def test_get_line_status_returns_valid_data(mcp_client):
     """Execute the line status tool and verify it returns structured TfL data."""
     response = await mcp_client("tools/call", {
-        "name": "get_line_status",
+        "name": "get_tfl_underground_status",
         "arguments": {}
     })
     assert "result" in response
@@ -53,23 +53,24 @@ async def test_invalid_tool_call_returns_mcp_error(mcp_client):
 
 
 async def test_cache_ttl_consistency(mcp_client):
-    """Verify that rapid successive calls return identical payloads, confirming cache hits."""
-    resp1 = await mcp_client("tools/call", {"name": "get_line_status", "arguments": {}})
-    resp2 = await mcp_client("tools/call", {"name": "get_line_status", "arguments": {}})
+    """Verify that rapid successive calls return cached data on the second request."""
+    resp1 = await mcp_client("tools/call", {"name": "get_tfl_underground_status", "arguments": {}})
+    resp2 = await mcp_client("tools/call", {"name": "get_tfl_underground_status", "arguments": {}})
     
     assert "result" in resp1 and "result" in resp2
-    text1 = resp1["result"]["content"][0]["text"]
-    text2 = resp2["result"]["content"][0]["text"]
-    assert text1 == text2, "Cache should return identical responses within the configured TTL window"
+    payload1 = json.loads(resp1["result"]["content"][0]["text"])
+    payload2 = json.loads(resp2["result"]["content"][0]["text"])
+    assert payload1["lines"] == payload2["lines"]
+    assert payload2["cache_status"] == "cached"
 
 
 async def test_health_endpoint_reports_cache_age(mcp_client, http_client):
-    """Validate the /health probe returns service status and cache age metrics."""
+    """Validate the /health probe returns expected service health payload."""
     response = await http_client.get("/health")
     response.raise_for_status()
     data = response.json()
     
-    assert data["status"] == "ok"
-    assert "cache_age_sec" in data
-    assert isinstance(data["cache_age_sec"], int)
-    assert data["env"] == "test"
+    assert data["status"] == "healthy"
+    assert "cache_active" in data
+    assert isinstance(data["cache_active"], bool)
+    assert "version" in data

@@ -46,26 +46,3 @@ else
 fi
 
 exit $TEST_EXIT_CODE
-
-# Deployment Test Plan: Docker Compose Setup for Test and Deployment
-
-## Services Tested
-| Service | Port | Health Check |
-|---------|------|--------------|
-| mcp-server | 8000 | GET /health |
-| mock-tfl-api | 8080 | GET /health |
-
-## Smoke Tests
-| Test | Endpoint | Expected |
-|------|----------|----------|
-| Health check | GET /health | 200 OK, `{"status": "ok"}` |
-| Line Status API | GET /Line/Status | 200 OK, JSON array |
-| Line Disruption API | GET /Line/victoria/Disruption | 200 OK, `{"disruptions": [...]}` |
-| Unknown Route | GET /api/nonexistent-route-v2 | 404 Not Found |
-
-## How to Run Locally
-chmod +x scripts/deploy_test.sh
-./scripts/deploy_test.sh
-
-## CI Integration
-These tests run in the `deploy-test` job in `.github/workflows/run-tests.yml`. The script automatically handles stack lifecycle, health polling, and test execution. Override `BASE_URL` in CI if the service is exposed on a different host/port. Ensure `pytest` and `httpx` are available in the CI runner environment.

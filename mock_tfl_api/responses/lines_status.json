@@ -1,9 +1,47 @@
-{
-  "lines": [
-    {"id": "victoria", "status": "Good Service"},
-    {"id": "central", "status": "Minor Delays"},
-    {"id": "northern", "status": "Good Service"},
-    {"id": "piccadilly", "status": "Good Service"},
-    {"id": "circle", "status": "Part Suspended"}
-  ]
-}
+[
+  {
+    "name": "victoria",
+    "lineStatuses": [
+      {
+        "statusSeverityDescription": "Good Service",
+        "statusSeverity": 0
+      }
+    ]
+  },
+  {
+    "name": "central",
+    "lineStatuses": [
+      {
+        "statusSeverityDescription": "Minor Delays",
+        "statusSeverity": 5
+      }
+    ]
+  },
+  {
+    "name": "northern",
+    "lineStatuses": [
+      {
+        "statusSeverityDescription": "Good Service",
+        "statusSeverity": 0
+      }
+    ]
+  },
+  {
+    "name": "piccadilly",
+    "lineStatuses": [
+      {
+        "statusSeverityDescription": "Good Service",
+        "statusSeverity": 0
+      }
+    ]
+  },
+  {
+    "name": "circle",
+    "lineStatuses": [
+      {
+        "statusSeverityDescription": "Part Suspended",
+        "statusSeverity": 10
+      }
+    ]
+  }
+]

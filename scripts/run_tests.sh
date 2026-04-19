@@ -18,7 +18,7 @@ echo "Waiting for MCP server to become ready..."
 
 # Wait for the MCP server health endpoint to respond
 while [ $ATTEMPT -lt $MAX_RETRIES ]; do
-    if wget --no-verbose --tries=1 --spider "${HEALTH_ENDPOINT}" 2>/dev/null; then
+    if wget --no-verbose --tries=1 --spider "${HEALTH_ENDPOINT}"; then
         echo "✅ MCP server is ready."
         break
     fi
