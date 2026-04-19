@@ -6,7 +6,8 @@
 - **HTTP Client:** `httpx` (async)
 - **Caching:** `cachetools` (`TTLCache`)
 - **Server:** `uvicorn` (ASGI)
-- **Containerization:** Docker (Alpine base)
+- **Containerization:** Docker (Alpine base), Docker Compose v2
+- **Testing:** `pytest`, `pytest-asyncio`
 
 ## Dependencies
 - `fastapi`
@@ -14,6 +15,7 @@
 - `httpx`
 - `cachetools`
 - `uvicorn`
+- `pytest`, `pytest-asyncio` (test stage)
 
 ## Environment Variables
 - `CACHE_TTL`: Duration in seconds for in-memory cache expiration (default: 60)
@@ -25,3 +27,6 @@
 - **Stateless Deployment:** No persistent storage or database; relies entirely on in-memory cache and external API.
 - **Headless Operation:** Designed exclusively for programmatic/AI client consumption via JSON-RPC.
 - **Lightweight Runtime:** Alpine-based Docker image optimized for minimal footprint and fast cold starts.
+- **Profile-Driven Orchestration:** Compose profiles isolate test, mock, and production workloads.
+- **Alpine Constraint:** Base image lacks `bash`; shell scripts must use `sh` or explicitly install `bash`.
+- **Structured Logging:** Containerized services output structured logs to stdout for centralized monitoring.

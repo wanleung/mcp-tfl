@@ -1,20 +1,67 @@
-version: "3.8"
-
 services:
-  app:
-    build: .
+  mock-tfl-api:
+    build:
+      context: ./mock_tfl_api
+      dockerfile: Dockerfile
+    container_name: mcp-tfl-mock-api
+    environment:
+      APP_ENV: test
+      MOCK_DELAY_MS: 0
+      MOCK_ERROR_RATE: 0
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: mcp-tfl-server-test
     ports:
       - "8000:8000"
     environment:
-      - TESTING=true
-      - LOG_LEVEL=WARNING
-      - MCP_TRANSPORT=sse
-      - TFL_CACHE_TTL=10
-      - TFL_API_TIMEOUT=5
+      APP_ENV: test
+      TESTING: "true"
+      TFL_API_BASE_URL: http://mock-tfl-api:8080
+      TFL_API_TIMEOUT_MS: 2000
+      CACHE_TTL_SECONDS: 5
+      LOG_LEVEL: DEBUG
+      SERVER_PORT: 8000
+    networks:
+      - mcp-network
+    depends_on:
+      mock-tfl-api:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8000/health || exit 1"]
       interval: 5s
       timeout: 3s
-      retries: 10
+      retries: 5
       start_period: 10s
-    restart: "no"
+
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    container_name: mcp-tfl-test-runner
+    command: ["sh", "/app/scripts/run_tests.sh"]
+    environment:
+      MCP_SERVER_URL: http://mcp-server:8000
+    networks:
+      - mcp-network
+    depends_on:
+      mcp-server:
+        condition: service_healthy
+    profiles:
+      - test
+
+networks:
+  mcp-network:
+    driver: bridge

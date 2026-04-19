@@ -27,7 +27,7 @@ def register_tools(mcp: FastMCP) -> None:
         mcp: The FastMCP server instance to register the tool with.
     """
 
-    cache_manager.configure(ttl_seconds=get_settings().TFL_CACHE_TTL)
+    cache_manager.configure(ttl_seconds=get_settings().CACHE_TTL_SECONDS)
 
     @mcp.tool()
     async def get_tfl_underground_status() -> str:

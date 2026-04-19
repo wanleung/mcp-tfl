@@ -1,64 +1,50 @@
-"""
-Configuration module for the TfL Underground Status MCP Server.
+"""Pydantic-based environment validator for the TfL MCP Server.
 
-Loads environment variables, validates constraints, and provides a typed 
-configuration object accessible as a singleton.
+Loads configuration from environment variables and optional `.env` files.
+Validates types, ranges, and formats at import time to fail fast on misconfiguration.
 """
-
-import os
-from dataclasses import dataclass
 from typing import Literal
 
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-@dataclass(frozen=True)
-class Settings:
-    """
-    Typed configuration object loaded from environment variables.
-    
-    Attributes:
-        TFL_CACHE_TTL: Time-to-live for the in-memory cache in seconds.
-        TFL_API_TIMEOUT: Timeout in seconds for TfL API HTTP requests.
-        LOG_LEVEL: Application logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-    """
-    TFL_CACHE_TTL: int
-    TFL_API_TIMEOUT: float
-    LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
+class ServiceConfiguration(BaseSettings):
+    """Validates and loads service configuration from environment variables and .env files."""
+
+    APP_ENV: Literal["test", "staging", "production", "development"] = Field(default="development")
+    CACHE_TTL_SECONDS: int = Field(default=60, ge=1)
+    TFL_API_BASE_URL: str = Field(default="https://api.tfl.gov.uk")
+    TFL_API_TIMEOUT_MS: int = Field(
+        default=5000,
+        ge=100,
+        le=30000,
+        description="TfL API timeout in milliseconds (capped at 30 seconds).",
+    )
+    SERVER_HOST: str = Field(default="0.0.0.0")
+    SERVER_PORT: int = Field(default=8000, ge=1, le=65535)
+    LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(default="INFO")
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore"
+    )
+
+    @field_validator("TFL_API_BASE_URL")
     @classmethod
-    def from_env(cls) -> "Settings":
-        """Load and validate settings from environment variables."""
-        try:
-            cache_ttl = int(os.getenv("TFL_CACHE_TTL", "60"))
-        except ValueError:
-            raise ValueError("TFL_CACHE_TTL must be a valid integer") from None
-        if cache_ttl <= 0:
-            raise ValueError("TFL_CACHE_TTL must be a positive integer")
-
-        try:
-            api_timeout = float(os.getenv("TFL_API_TIMEOUT", "10.0"))
-        except ValueError:
-            raise ValueError("TFL_API_TIMEOUT must be a valid number") from None
-        if api_timeout <= 0:
-            raise ValueError("TFL_API_TIMEOUT must be a positive number")
-
-        log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-        valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
-        if log_level not in valid_levels:
-            raise ValueError(f"LOG_LEVEL must be one of {valid_levels}, got '{log_level}'")
-
-        return cls(
-            TFL_CACHE_TTL=cache_ttl,
-            TFL_API_TIMEOUT=api_timeout,
-            LOG_LEVEL=log_level
-        )
+    def validate_url(cls, v: str) -> str:
+        """Ensure the API URL has a valid HTTP/HTTPS scheme."""
+        if not v.startswith(("http://", "https://")):
+            raise ValueError("TFL_API_BASE_URL must start with http:// or https://")
+        return v
 
 
-_settings: Settings | None = None
+# Instantiate settings at module level to trigger validation immediately on import
+settings = ServiceConfiguration()
 
 
-def get_settings() -> Settings:
-    """Return lazily-loaded application settings."""
-    global _settings
-    if _settings is None:
-        _settings = Settings.from_env()
-    return _settings
+def get_settings() -> ServiceConfiguration:
+    """Return the singleton service configuration instance for backwards compatibility."""
+    return settings

@@ -1,0 +1,13 @@
+{
+  "victoria": [],
+  "central": [
+    {"description": "Minor delays due to signal failure at Holborn"}
+  ],
+  "northern": [
+    {"description": "Planned engineering works between Camden Town and High Barnet"}
+  ],
+  "piccadilly": [],
+  "circle": [
+    {"description": "Part suspended due to a person on the track at Edgware Road"}
+  ]
+}

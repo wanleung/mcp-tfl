@@ -1,0 +1,47 @@
+[
+  {
+    "name": "victoria",
+    "lineStatuses": [
+      {
+        "statusSeverityDescription": "Good Service",
+        "statusSeverity": 0
+      }
+    ]
+  },
+  {
+    "name": "central",
+    "lineStatuses": [
+      {
+        "statusSeverityDescription": "Minor Delays",
+        "statusSeverity": 5
+      }
+    ]
+  },
+  {
+    "name": "northern",
+    "lineStatuses": [
+      {
+        "statusSeverityDescription": "Good Service",
+        "statusSeverity": 0
+      }
+    ]
+  },
+  {
+    "name": "piccadilly",
+    "lineStatuses": [
+      {
+        "statusSeverityDescription": "Good Service",
+        "statusSeverity": 0
+      }
+    ]
+  },
+  {
+    "name": "circle",
+    "lineStatuses": [
+      {
+        "statusSeverityDescription": "Part Suspended",
+        "statusSeverity": 10
+      }
+    ]
+  }
+]

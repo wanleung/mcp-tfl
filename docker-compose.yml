@@ -1,0 +1,33 @@
+# docker-compose.yml
+# Base service definitions, shared networks, and default environment injection for the TfL MCP Server.
+# Usage: docker compose up -d
+# Test override: docker compose -f docker-compose.yml -f docker-compose.test.yml --profile test up
+# Deploy override: docker compose -f docker-compose.yml -f docker-compose.deploy.yml --profile deploy up
+
+services:
+  mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcp-tfl-server
+    ports:
+      - "${SERVER_PORT:-8000}:8000"
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-60}
+      TFL_API_BASE_URL: ${TFL_API_BASE_URL:-https://api.tfl.gov.uk}
+      TFL_API_TIMEOUT_MS: ${TFL_API_TIMEOUT_MS:-5000}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+networks:
+  mcp-network:
+    driver: bridge
