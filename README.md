@@ -17,7 +17,7 @@
 - **Async-First I/O:** All external calls and MCP routing leverage Python's `asyncio`.
 - **TTL Caching:** Read-through caching with fixed expiration to balance data freshness and API rate limits.
 - **Environment-Driven Config:** Decouples runtime parameters from code for flexible deployment.
-- **Multi-Stage Container Builds:** Separates dependency installation and runtime layers to minimize final image footprint.
+- **Multi-Stage Container Builds:** Uses separate `runtime` and `test` stages so test dependencies are only added for testing targets.
 
 ## Tech Stack & Dependencies
 - **Language:** Python 3.11
@@ -45,16 +45,16 @@ cd mcp-tfl
 
 ### 2. Configure Environment Variables
 Set the following environment variables (defaults shown):
-- `TFL_CACHE_TTL`: Duration in seconds for in-memory cache expiration (default: `60`)
-- `TFL_API_TIMEOUT`: Request timeout for TfL API calls (default: `10.0`)
-- `TFL_API_ENDPOINT`: Base URL for TfL Unified API (default: official TfL API)
+- `CACHE_TTL_SECONDS`: Duration in seconds for in-memory cache expiration (default: `60`)
+- `TFL_API_TIMEOUT_MS`: Request timeout for TfL API calls in milliseconds (default: `5000`)
+- `TFL_API_BASE_URL`: Base URL for TfL Unified API (default: official TfL API)
 - `LOG_LEVEL`: Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`; default: `INFO`)
 
 Example (in `.env` or your deployment config):
 ```env
-TFL_CACHE_TTL=60
-TFL_API_TIMEOUT=5
-TFL_API_ENDPOINT=https://api.tfl.gov.uk
+CACHE_TTL_SECONDS=60
+TFL_API_TIMEOUT_MS=5000
+TFL_API_BASE_URL=https://api.tfl.gov.uk
 LOG_LEVEL=INFO
 ```
 
@@ -73,10 +73,10 @@ uvicorn main:app --reload
 The project uses Docker Compose v2 with profile-driven environments:
 ```bash
 # Run production-like setup
-docker compose --profile deploy up -d
+docker compose -f docker-compose.yml -f docker-compose.deploy.yml --profile deploy up -d
 
 # Run test environment with mock API
-docker compose --profile test up -d
+docker compose -f docker-compose.yml -f docker-compose.test.yml --profile test up -d
 ```
 *Note: The `Dockerfile` uses a multi-stage build on `python:3.11-alpine` for a lightweight runtime.*
 
@@ -119,16 +119,17 @@ Call the registered MCP tool `get_tfl_underground_status` with no arguments:
 ```
 
 ### Mock API Server (Testing)
-- **URL:** `http://localhost:8001` (when running with `--profile test`)
+- **Compose network URL:** `http://mock-tfl-api:8080` (when running with `--profile test`)
+- This mock service is reachable from other containers on the Docker Compose network via the `mock-tfl-api` service name; it is not exposed on a host `localhost` port unless a port mapping is added in Compose.
 - Lightweight FastAPI service simulating TfL Unified API responses.
 - Enables offline, rate-limit-free integration testing and CI/CD validation.
 
 ### Health & Monitoring
 - **Healthcheck:** Docker Compose includes native healthchecks for service readiness.
-- **Logging:** Structured JSON logs are output to `stdout` for centralized monitoring and debugging.
+- **Logging:** Logs are written to `stdout` in a consistent plain-text format for centralized monitoring and debugging.
 
 ## Caching & Performance
-- Responses are cached in-memory for 60 seconds (configurable via `TFL_CACHE_TTL`).
+- Responses are cached in-memory for 60 seconds (configurable via `CACHE_TTL_SECONDS`).
 - Designed for stateless, fast cold starts and minimal resource usage.
 - Read-through caching strategy balances data freshness with external API rate limits.
 
@@ -137,7 +138,7 @@ Call the registered MCP tool `get_tfl_underground_status` with no arguments:
 ### Running Tests
 Tests are containerized to ensure environment consistency:
 ```bash
-docker compose --profile test run test-runner
+docker compose -f docker-compose.yml -f docker-compose.test.yml --profile test run test-runner
 # or locally:
 pytest tests/ -v
 ```
@@ -149,15 +150,11 @@ pytest tests/ -v
 ### Current Focus & Roadmap
 - Expanding automated tests around transport/error handling behavior.
 - Improving deployment documentation and developer onboarding guides.
-- Resolving Alpine shell compatibility for test runners.
-- Implementing robust config validation (`pydantic-settings`) and cache concurrency safety.
+- Hardening observability and operational runbooks for production deployments.
+- Extending integration coverage for retry/caching behavior under failure scenarios.
 
 ## Known Issues & Tech Debt
-- **Config Validation:** Relies on basic type casting; invalid strings may crash at import time.
-- **Cache Concurrency:** `TTLCache` lacks explicit async-safe locking; potential race condition under high concurrency.
-- **API Resilience:** Uses `httpx` default retries; custom exponential backoff not yet configured.
-- **Alpine Compatibility:** Test runner script requires `bash`, which is absent in the default Alpine base image.
-- **Healthcheck Alignment:** Compose healthcheck configuration may need alignment with actual FastAPI health routes.
+- Previously noted concerns around config validation, cache concurrency safety, TfL client retry backoff, Alpine test-runner shell compatibility, and Compose/FastAPI healthcheck alignment have been addressed in the current implementation.
 
 ## License
 See LICENSE file for details.
