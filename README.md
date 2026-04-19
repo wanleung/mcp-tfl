@@ -157,4 +157,7 @@ pytest tests/ -v
 - Previously noted concerns around config validation, cache concurrency safety, TfL client retry backoff, Alpine test-runner shell compatibility, and Compose/FastAPI healthcheck alignment have been addressed in the current implementation.
 
 ## License
-See LICENSE file for details.
+
+This project is licensed under the **GNU General Public License v3.0 or later** (GPL-3.0-or-later).
+
+See the [LICENSE](LICENSE) file for the full license text.
