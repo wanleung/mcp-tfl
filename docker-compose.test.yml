@@ -32,7 +32,6 @@ services:
       TFL_API_TIMEOUT_MS: 2000
       CACHE_TTL_SECONDS: 5
       LOG_LEVEL: DEBUG
-      SERVER_HOST: 0.0.0.0
       SERVER_PORT: 8000
     networks:
       - mcp-network

@@ -17,7 +17,6 @@ services:
       CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-60}
       TFL_API_BASE_URL: ${TFL_API_BASE_URL:-https://api.tfl.gov.uk}
       TFL_API_TIMEOUT_MS: ${TFL_API_TIMEOUT_MS:-5000}
-      SERVER_HOST: ${SERVER_HOST:-0.0.0.0}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     networks:
       - mcp-network
